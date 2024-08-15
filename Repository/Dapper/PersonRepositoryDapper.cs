@@ -71,7 +71,37 @@ namespace StaffWebApi.Repository.Dapper
 			}
 		}
 
+		public async Task<Person> UpdatePersonAsync(Person person)
+		{
+			using (IDbConnection db = new SqlConnection(_connectionString))
+			{
+				var parameters = new DynamicParameters();
+				parameters.Add("Id", person.Id, DbType.Int32, ParameterDirection.Input);
+				parameters.Add("Name", person.Name, DbType.String, ParameterDirection.Input);
+				parameters.Add("Surname", person.Surname, DbType.String, ParameterDirection.Input);
+				parameters.Add("Phone", person.Phone, DbType.String, ParameterDirection.Input);
+				parameters.Add("Email", person.Email, DbType.String, ParameterDirection.Input);
+				parameters.Add("ImageUrl", person.ImageUrl, DbType.String, ParameterDirection.Input);
+				parameters.Add("PositionId", person.PositionId, DbType.Int32, ParameterDirection.Input);
 
+				string query = "exec UpdatePerson @Id, @Name, @Surname, @Phone, @Email, @ImageUrl, @PositionId";
+
+
+
+
+
+				var updatedPerson = (await db.QueryAsync<Person, Position, Person>(query, (person, position) =>
+				{
+					person.Position = position;
+					return person;
+				}, parameters)).FirstOrDefault();
+
+				return updatedPerson!;
+			}
+		}
+
+
+		//Undone
 		public async Task DeletePersonByIdAsync(int id)
 		{
 			using (IDbConnection db = new SqlConnection(_connectionString))
@@ -84,10 +114,8 @@ namespace StaffWebApi.Repository.Dapper
 			}
 		}
 
-		public Task<Person> UpdatePersonAsync(Person person)
-		{
-			throw new NotImplementedException();
-		}
+
+
 
 	}
 }

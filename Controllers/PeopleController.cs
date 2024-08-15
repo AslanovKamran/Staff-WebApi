@@ -32,6 +32,7 @@ namespace StaffWebApi.Controllers
 			}
 		}
 
+
 		[HttpGet("{id}")]
 		[ProducesResponseType(200)]
 		[ProducesResponseType(400)]
@@ -51,8 +52,6 @@ namespace StaffWebApi.Controllers
 		}
 
 
-		//Need to fix from here Both Dapper and Controllers
-
 		[HttpPost]
 		[ProducesResponseType(200)]
 		[ProducesResponseType(400)]
@@ -62,12 +61,12 @@ namespace StaffWebApi.Controllers
 		{
 			if (!ModelState.IsValid)
 				return BadRequest(ModelState);
-			
 
-			if(!ValidationUtils.IsValidEmail(dto.Email)) 
+
+			if (!ValidationUtils.IsValidEmail(dto.Email))
 				return BadRequest(ValidationUtils.InvalidEmailMessage(dto.Email));
 
-		
+
 			var person = new Person
 			{
 				Name = dto.Name,
@@ -89,9 +88,9 @@ namespace StaffWebApi.Controllers
 
 				return CreatedAtAction(nameof(GetPersonById), new { id = addedPerson.Id }, addedPerson);
 			}
-			catch (SqlException ex) 
+			catch (SqlException ex)
 			{
-				return Conflict($"SQL Exception: A person with the same phone number or email already exists. {ex.ErrorCode}");
+				return Conflict($"SQL Exception: A person with the same phone number or email already exists.\n Error Code: {ex.ErrorCode}\nError Message: {ex.Message}");
 			}
 			catch (Exception ex)
 			{
@@ -99,9 +98,52 @@ namespace StaffWebApi.Controllers
 			}
 		}
 
-		[HttpDelete("{id}")]
+
+		[HttpPut]
+		[ProducesResponseType(200)]
 		[ProducesResponseType(404)]
+		[ProducesResponseType(409)]
+		[ProducesResponseType(500)]
+		public async Task<IActionResult> UpdatePerson([FromForm] UpdatePersonDTO dto)
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			if (!ValidationUtils.IsValidEmail(dto.Email))
+				return BadRequest(ValidationUtils.InvalidEmailMessage(dto.Email));
+
+			var person = new Person()
+			{
+				Id = dto.Id,
+				Name = dto.Name,
+				Surname = dto.Surname,
+				Phone = dto.Phone,
+				Email = dto.Email,
+				PositionId = dto.PositionId,
+			};
+
+			try
+			{
+				var updatedPerson = await _repository.UpdatePersonAsync(person);
+				return Ok(updatedPerson);
+			}
+			catch (SqlException ex)
+			{
+				return Conflict($"SQL Exception:\nError Code: {ex.ErrorCode}\nError Message: {ex.Message}");
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+			}
+
+		}
+
+
+
+		//Undone
+		[HttpDelete("{id}")]
 		[ProducesResponseType(204)]
+		[ProducesResponseType(404)]
 		public async Task<IActionResult> DeletePerson(int id)
 		{
 			var person = await _repository.GetPersonByIdAsync(id);
@@ -113,9 +155,6 @@ namespace StaffWebApi.Controllers
 			return NoContent();
 
 		}
-
-		//update
-
 
 	}
 }
