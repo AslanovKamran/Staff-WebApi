@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
 using StaffWebApi.Models.Domain;
 using StaffWebApi.Models.DTO;
 using StaffWebApi.Repository.Abstract;
+using StaffWebApi.Validators;
 
 namespace StaffWebApi.Controllers
 {
@@ -48,12 +50,25 @@ namespace StaffWebApi.Controllers
 			}
 		}
 
+
+		//Need to fix from here Both Dapper and Controllers
+
 		[HttpPost]
 		[ProducesResponseType(200)]
 		[ProducesResponseType(400)]
-		public async Task<IActionResult> PostPerson([FromForm] AddPersonDTO dto)
+		[ProducesResponseType(409)]
+		[ProducesResponseType(500)]
+		public async Task<IActionResult> AddPerson([FromForm] AddPersonDTO dto)
 		{
-			var person = new Person()
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+			
+
+			if(!ValidationUtils.IsValidEmail(dto.Email)) 
+				return BadRequest(ValidationUtils.InvalidEmailMessage(dto.Email));
+
+		
+			var person = new Person
 			{
 				Name = dto.Name,
 				Surname = dto.Surname,
@@ -62,16 +77,25 @@ namespace StaffWebApi.Controllers
 				ImageUrl = dto.ImageUrl,
 				PositionId = dto.PositionId
 			};
+
 			try
 			{
+				var addedPerson = await _repository.AddPersonAsync(person);
 
-				var addded = await _repository.AddPersonAsync(person);
-				return Ok(addded);
+				if (addedPerson == null)
+				{
+					return StatusCode(StatusCodes.Status500InternalServerError, "Failed to add the person.");
+				}
+
+				return CreatedAtAction(nameof(GetPersonById), new { id = addedPerson.Id }, addedPerson);
+			}
+			catch (SqlException ex) 
+			{
+				return Conflict($"SQL Exception: A person with the same phone number or email already exists. {ex.ErrorCode}");
 			}
 			catch (Exception ex)
 			{
-
-				return BadRequest(ex.Message);
+				return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
 			}
 		}
 

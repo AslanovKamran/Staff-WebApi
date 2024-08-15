@@ -46,6 +46,7 @@ namespace StaffWebApi.Repository.Dapper
 				return user!;
 			}
 		}
+
 		public async Task<Person> AddPersonAsync(Person person)
 		{
 			using (IDbConnection db = new SqlConnection(_connectionString))
@@ -70,10 +71,6 @@ namespace StaffWebApi.Repository.Dapper
 			}
 		}
 
-		public Task<Person> UpdatePersonAsync(Person person)
-		{
-			throw new NotImplementedException();
-		}
 
 		public async Task DeletePersonByIdAsync(int id)
 		{
@@ -85,6 +82,11 @@ namespace StaffWebApi.Repository.Dapper
 				string query = @"DeletePersonById @Id";
 				await db.ExecuteAsync(query, parameters);
 			}
+		}
+
+		public Task<Person> UpdatePersonAsync(Person person)
+		{
+			throw new NotImplementedException();
 		}
 
 	}

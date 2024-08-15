@@ -22,7 +22,6 @@ namespace StaffWebApi.Models.Domain
 
 		[Required(AllowEmptyStrings =false)]
 		[MaxLength(255)]
-		[EmailAddress]
 		public string Email { get; set; } = string.Empty;
 
 		[MaxLength(255)]
