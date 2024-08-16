@@ -15,5 +15,7 @@ namespace StaffWebApi.Validators
 			return match.Success;
 		}
 		public static string InvalidEmailMessage(string email) => $"Invalid email format try something like valid.email@example.com. Your email is {email}";
+
+		
 	}
 }

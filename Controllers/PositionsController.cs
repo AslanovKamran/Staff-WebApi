@@ -35,6 +35,7 @@ namespace StaffWebApi.Controllers
 		/// <param name="id"></param>
 		/// <returns></returns>
 		/// 
+
 		[HttpGet("{id}")]
 		public async Task<IActionResult> GetPosition(int id) 
 		{
@@ -137,19 +138,17 @@ namespace StaffWebApi.Controllers
 				await _repository.DeletePositionByIdAsync(id);
 				return NoContent();
 			}
+
 			catch (SqlException ex)
 			{
+				//Reference key constraint exception 
 				if (ex.Number == 547)
-				{
 					return BadRequest(new { message = "Cannot delete this position because it is referenced by one or more people." });
-				}
+				
 				else
-				{
-					
 					return StatusCode(500, "Internal server error");
-				}
-
 			}
+
 			catch (Exception ex) 
 			{
 				return BadRequest($"Failed to delete position {ex.Message}");

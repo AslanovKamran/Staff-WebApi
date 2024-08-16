@@ -1,10 +1,9 @@
-﻿using System.Data.SqlClient;
-using System.Data;
+﻿using StaffWebApi.Repository.Abstract;
 using StaffWebApi.Models.Domain;
-using StaffWebApi.Repository.Abstract;
+using System.Data.SqlClient;
+using System.Data;
 using Dapper;
-using System.Numerics;
-using System.Xml.Linq;
+
 
 namespace StaffWebApi.Repository.Dapper
 {
@@ -27,7 +26,6 @@ namespace StaffWebApi.Repository.Dapper
 				return people;
 			}
 		}
-
 		public async Task<Person> GetPersonByIdAsync(int id)
 		{
 			using (IDbConnection db = new SqlConnection(_connectionString))
@@ -100,9 +98,7 @@ namespace StaffWebApi.Repository.Dapper
 			}
 		}
 
-
-		//Undone
-		public async Task DeletePersonByIdAsync(int id)
+		public async Task<int> DeletePersonByIdAsync(int id)
 		{
 			using (IDbConnection db = new SqlConnection(_connectionString))
 			{
@@ -110,12 +106,11 @@ namespace StaffWebApi.Repository.Dapper
 				parameters.Add("Id", id, DbType.Int32, ParameterDirection.Input);
 
 				string query = @"DeletePersonById @Id";
-				await db.ExecuteAsync(query, parameters);
+
+				var rowsAffected = await db.ExecuteAsync(query, parameters);
+				return rowsAffected;
 			}
 		}
-
-
-
 
 	}
 }

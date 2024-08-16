@@ -1,8 +1,9 @@
-﻿using System.Data;
-using System.Data.SqlClient;
-using Dapper;
+﻿using StaffWebApi.Repository.Abstract;
 using StaffWebApi.Models.Domain;
-using StaffWebApi.Repository.Abstract;
+using System.Data.SqlClient;
+using System.Data;
+using Dapper;
+
 
 namespace StaffWebApi.Repository.Dapper
 {
@@ -58,18 +59,6 @@ namespace StaffWebApi.Repository.Dapper
 			}
 		}
 
-		public async Task DeletePositionByIdAsync(int id)
-		{
-			using (IDbConnection db = new SqlConnection(_connectionString))
-			{
-				var parameters = new DynamicParameters();
-				parameters.Add("Id", id, DbType.Int32, ParameterDirection.Input);
-
-				string query = @"DeletePositionById @Id";
-				await db.ExecuteAsync(query, parameters);
-			}
-		}
-
 		public async Task<Position> UpdatePositionAsync(Position position)
 		{
 			using (IDbConnection db = new SqlConnection(_connectionString))
@@ -84,5 +73,18 @@ namespace StaffWebApi.Repository.Dapper
 				return updatedPosition!;
 			}
 		}
+
+		public async Task DeletePositionByIdAsync(int id)
+		{
+			using (IDbConnection db = new SqlConnection(_connectionString))
+			{
+				var parameters = new DynamicParameters();
+				parameters.Add("Id", id, DbType.Int32, ParameterDirection.Input);
+
+				string query = @"DeletePositionById @Id";
+				await db.ExecuteAsync(query, parameters);
+			}
+		}
+
 	}
 }

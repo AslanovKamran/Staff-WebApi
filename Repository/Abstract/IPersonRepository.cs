@@ -10,7 +10,7 @@ namespace StaffWebApi.Repository.Abstract
 		Task<Person> AddPersonAsync(Person person);
 		Task<Person> UpdatePersonAsync(Person person);
 		
-		Task DeletePersonByIdAsync(int id);
+		Task<int> DeletePersonByIdAsync(int id);
 
 	}
 }

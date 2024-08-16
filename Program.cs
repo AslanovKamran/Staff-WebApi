@@ -30,6 +30,14 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.UseStaticFiles();
+
+app.UseCors(options =>
+{
+	options.AllowAnyMethod();
+	options.AllowAnyHeader();
+	options.AllowAnyOrigin();
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

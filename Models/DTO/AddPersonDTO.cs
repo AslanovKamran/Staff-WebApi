@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace StaffWebApi.Models.DTO
 {
@@ -25,6 +26,7 @@ namespace StaffWebApi.Models.DTO
 		public string? ImageUrl { get; set; }
 
 		public int PositionId { get; set; }
+
 	}
 }
 

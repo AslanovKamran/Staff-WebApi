@@ -1,9 +1,10 @@
-﻿using System.Data.SqlClient;
-using Microsoft.AspNetCore.Mvc;
+﻿using StaffWebApi.Repository.Abstract;
 using StaffWebApi.Models.Domain;
+using Microsoft.AspNetCore.Mvc;
 using StaffWebApi.Models.DTO;
-using StaffWebApi.Repository.Abstract;
 using StaffWebApi.Validators;
+using System.Data.SqlClient;
+using StaffWebApi.Helpers;
 
 namespace StaffWebApi.Controllers
 {
@@ -57,7 +58,7 @@ namespace StaffWebApi.Controllers
 		[ProducesResponseType(400)]
 		[ProducesResponseType(409)]
 		[ProducesResponseType(500)]
-		public async Task<IActionResult> AddPerson([FromForm] AddPersonDTO dto)
+		public async Task<IActionResult> AddPerson([FromForm] AddPersonDTO dto, IFormFile? image)
 		{
 			if (!ModelState.IsValid)
 				return BadRequest(ModelState);
@@ -73,9 +74,24 @@ namespace StaffWebApi.Controllers
 				Surname = dto.Surname,
 				Phone = dto.Phone,
 				Email = dto.Email,
-				ImageUrl = dto.ImageUrl,
 				PositionId = dto.PositionId
 			};
+
+			if (image != null)
+			{
+				try
+				{
+					var imageName = FileUploader.UploadFile(image);
+					person.ImageUrl = imageName;
+
+				}
+				catch (Exception ex)
+				{
+					return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+
+				}
+			}
+
 
 			try
 			{
@@ -104,13 +120,19 @@ namespace StaffWebApi.Controllers
 		[ProducesResponseType(404)]
 		[ProducesResponseType(409)]
 		[ProducesResponseType(500)]
-		public async Task<IActionResult> UpdatePerson([FromForm] UpdatePersonDTO dto)
+		public async Task<IActionResult> UpdatePerson([FromForm] UpdatePersonDTO dto, IFormFile? image)
 		{
 			if (!ModelState.IsValid)
 				return BadRequest(ModelState);
 
 			if (!ValidationUtils.IsValidEmail(dto.Email))
 				return BadRequest(ValidationUtils.InvalidEmailMessage(dto.Email));
+
+			var currentPerson = await _repository.GetPersonByIdAsync(dto.Id);
+			if (currentPerson == null)
+			{
+				return NotFound("Person not found.");
+			}
 
 			var person = new Person()
 			{
@@ -122,6 +144,30 @@ namespace StaffWebApi.Controllers
 				PositionId = dto.PositionId,
 			};
 
+			if (image != null)
+			{
+				try
+				{
+					if (!string.IsNullOrEmpty(currentPerson.ImageUrl))
+					{
+						FileEraser.DeleteImage(currentPerson.ImageUrl);
+					}
+					var imageName = FileUploader.UploadFile(image);
+					person.ImageUrl = imageName;
+
+				}
+				catch (Exception ex)
+				{
+					return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+
+				}
+			}
+
+			else
+			{
+				// Keep the existing ImageUrl if no new image is provided
+				person.ImageUrl = currentPerson.ImageUrl;
+			}
 			try
 			{
 				var updatedPerson = await _repository.UpdatePersonAsync(person);
@@ -140,21 +186,29 @@ namespace StaffWebApi.Controllers
 
 
 
-		//Undone
+
 		[HttpDelete("{id}")]
 		[ProducesResponseType(204)]
 		[ProducesResponseType(404)]
 		public async Task<IActionResult> DeletePerson(int id)
 		{
-			var person = await _repository.GetPersonByIdAsync(id);
-			if (person is null)
+
+			var currentPerson = await _repository.GetPersonByIdAsync(id);
+			
+			var rowsAffected = await _repository.DeletePersonByIdAsync(id);
+			if (rowsAffected == 0)
+				return NotFound("Person could not be deleted, possibly because it was already removed.");
+
+			if (!string.IsNullOrEmpty(currentPerson.ImageUrl))
 			{
-				return NotFound("Person with this Id has not been found");
+				FileEraser.DeleteImage(currentPerson.ImageUrl);
 			}
-			await _repository.DeletePersonByIdAsync(id);
 			return NoContent();
+
 
 		}
 
 	}
 }
+
+

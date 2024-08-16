@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace StaffWebApi.Models.Domain
 {
@@ -30,5 +31,6 @@ namespace StaffWebApi.Models.Domain
 		public int PositionId { get; set; }
 
 		public Position Position { get; set; } = new();
-	}
+
+    }
 }

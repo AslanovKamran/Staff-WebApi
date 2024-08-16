@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace StaffWebApi.Models.DTO
 {
@@ -29,5 +30,6 @@ namespace StaffWebApi.Models.DTO
 
 		[Required]
 		public int PositionId { get; set; }
+
 	}
 }
