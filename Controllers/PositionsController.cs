@@ -30,7 +30,7 @@ public class PositionsController : ControllerBase
 	}
 
 	/// <summary>
-	/// Get Position By Id
+	/// Get A Position By Id
 	/// </summary>
 	/// <param name="id"></param>
 	/// <returns></returns>
@@ -85,7 +85,7 @@ public class PositionsController : ControllerBase
 	}
 
 	/// <summary>
-	/// Update Position
+	/// Update A Position
 	/// </summary>
 	/// <param name="position"></param>
 	/// <returns></returns>
@@ -121,7 +121,7 @@ public class PositionsController : ControllerBase
 	}
 
 	/// <summary>
-	/// Delete position by Id (Don't delete positions referenced by other entities)
+	/// Delete A Position by Its Id (Don't delete positions referenced by other entities)
 	/// </summary>
 	/// <param name="id"></param>
 	/// <returns></returns>

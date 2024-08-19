@@ -4,7 +4,6 @@ using StaffWebApi.Repository.Dapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen((options =>
@@ -15,11 +14,10 @@ builder.Services.AddSwaggerGen((options =>
 	options.IncludeXmlComments(xmlPath);
 	#endregion
 
-
 }));
 
 
-var connectionString = builder.Configuration.GetConnectionString("Default");
+var connectionString = builder.Configuration.GetConnectionString("Network");
 builder.Services.AddScoped<IPositionRepository, PositionRepositoryDapper>(provider => new PositionRepositoryDapper(connectionString));
 builder.Services.AddScoped<IPersonRepository, PersonRepositoryDapper>(provider => new PersonRepositoryDapper(connectionString));
 

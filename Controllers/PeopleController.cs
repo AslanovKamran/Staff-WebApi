@@ -18,6 +18,12 @@ public class PeopleController : ControllerBase
 
 	public PeopleController(IPersonRepository repository) => _repository = repository;
 
+	/// <summary>
+	/// Get All People
+	/// </summary>
+	/// <param name="pageParameters"></param>
+	/// <returns></returns>
+	
 	[HttpGet]
 	[ProducesResponseType(200)]
 	[ProducesResponseType(400)]
@@ -56,7 +62,12 @@ public class PeopleController : ControllerBase
 		}
 	}
 
-
+	/// <summary>
+	/// Get A Person By Their Id
+	/// </summary>
+	/// <param name="id"></param>
+	/// <returns></returns>
+	
 	[HttpGet("{id}")]
 	[ProducesResponseType(200)]
 	[ProducesResponseType(400)]
@@ -75,7 +86,13 @@ public class PeopleController : ControllerBase
 		}
 	}
 
-
+	/// <summary>
+	/// Insert A New Person 
+	/// </summary>
+	/// <param name="dto"></param>
+	/// <param name="image"></param>
+	/// <returns></returns>
+	
 	[HttpPost]
 	[ProducesResponseType(200)]
 	[ProducesResponseType(400)]
@@ -138,6 +155,13 @@ public class PeopleController : ControllerBase
 	}
 
 
+	/// <summary>
+	/// Update A Person
+	/// </summary>
+	/// <param name="dto"></param>
+	/// <param name="image"></param>
+	/// <returns></returns>
+	
 	[HttpPut]
 	[ProducesResponseType(200)]
 	[ProducesResponseType(404)]
@@ -207,7 +231,11 @@ public class PeopleController : ControllerBase
 
 	}
 
-
+	/// <summary>
+	/// Delete A Person By Their Id
+	/// </summary>
+	/// <param name="id"></param>
+	/// <returns></returns>
 	[HttpDelete("{id}")]
 	[ProducesResponseType(204)]
 	[ProducesResponseType(404)]
