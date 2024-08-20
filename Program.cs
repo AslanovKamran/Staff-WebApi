@@ -17,7 +17,7 @@ builder.Services.AddSwaggerGen((options =>
 }));
 
 
-var connectionString = builder.Configuration.GetConnectionString("Network");
+var connectionString = builder.Configuration.GetConnectionString("Default");
 builder.Services.AddScoped<IPositionRepository, PositionRepositoryDapper>(provider => new PositionRepositoryDapper(connectionString));
 builder.Services.AddScoped<IPersonRepository, PersonRepositoryDapper>(provider => new PersonRepositoryDapper(connectionString));
 
