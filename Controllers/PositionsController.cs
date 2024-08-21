@@ -19,14 +19,17 @@ public class PositionsController : ControllerBase
 	/// Get All Positions
 	/// </summary>
 	/// <returns></returns>
-	
+
 	[HttpGet]
 	[ProducesResponseType(200)]
-	[ProducesResponseType(400)]
-	public async Task<IActionResult> GetPositions() 
+	[ProducesResponseType(404)]
+	public async Task<IActionResult> GetPositions()
 	{
 		var positions = await _repository.GetPositionsAsync();
-		return positions == null ? BadRequest() : Ok(positions);
+		if (positions == null || !positions.Any()) 
+			return NotFound("No positoins found");
+			
+		return Ok(positions);
 	}
 
 	/// <summary>
@@ -45,7 +48,7 @@ public class PositionsController : ControllerBase
 
 
 	/// <summary>
-	/// Insert A New Position
+	/// Add A New Position (Do not add the same position)
 	/// </summary>
 	/// <param name="position"></param>
 	/// <returns></returns>

@@ -87,7 +87,7 @@ public class PeopleController : ControllerBase
 	}
 
 	/// <summary>
-	/// Insert A New Person 
+	/// Add A New Person (Login must be unique)
 	/// </summary>
 	/// <param name="dto"></param>
 	/// <param name="image"></param>

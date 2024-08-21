@@ -46,14 +46,14 @@ public class PositionRepositoryDapper : IPositionRepository
 			string query = @"exec AddPosition @Title, @Salary";
 			try
 			{
-				var insertedposition = await db.QuerySingleOrDefaultAsync<Position>(query, parameters);
-				return insertedposition!;
+				var insertedPosition = await db.QuerySingleOrDefaultAsync<Position>(query, parameters);
+				return insertedPosition!;
 
 			}
 			catch (SqlException ex)
 			{
 
-				throw new InvalidOperationException($"Error while adding position: {ex.Message}");
+				throw new InvalidOperationException($"Error while adding a position: {ex.Message}");
 
 			}
 		}

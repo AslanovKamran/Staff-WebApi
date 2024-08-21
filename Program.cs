@@ -1,6 +1,6 @@
-using System.Reflection;
 using StaffWebApi.Repository.Abstract;
 using StaffWebApi.Repository.Dapper;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,8 +18,10 @@ builder.Services.AddSwaggerGen((options =>
 
 
 var connectionString = builder.Configuration.GetConnectionString("Default");
+
 builder.Services.AddScoped<IPositionRepository, PositionRepositoryDapper>(provider => new PositionRepositoryDapper(connectionString));
 builder.Services.AddScoped<IPersonRepository, PersonRepositoryDapper>(provider => new PersonRepositoryDapper(connectionString));
+builder.Services.AddScoped<IRoleRepository, RoleRepositoryDapper>(provider => new RoleRepositoryDapper(connectionString));
 
 
 var app = builder.Build();
