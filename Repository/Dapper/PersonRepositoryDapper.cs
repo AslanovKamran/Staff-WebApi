@@ -54,13 +54,13 @@ public class PersonRepositoryDapper : IPersonRepository
 
 			string query = "exec GetPersonById @Id";
 
-			var user = (await db.QueryAsync<Person, Position, Person>(query, (person, position) =>
+			var person = (await db.QueryAsync<Person, Position, Person>(query, (prs, pos) =>
 			{
-				person.Position = position;
-				return person;
+				prs.Position = pos;
+				return prs;
 			}, parameters)).FirstOrDefault();
 
-			return user!;
+			return person!;
 		}
 	}
 

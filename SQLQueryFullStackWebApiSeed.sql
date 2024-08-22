@@ -7,7 +7,6 @@
 --GO
 --USE StaffDb
 
-
 --GO
 --CREATE TABLE Positions
 --(
@@ -344,6 +343,10 @@
 --[UpdatedAt] DATETIME2 NULL
 --)
 
+--GO
+--CREATE NONCLUSTERED INDEX IX_Users_Login
+--ON Users (Login);
+
 
 ------Trigger that will chnage UpdatedAt timestamp when the table is Updated
 --GO
@@ -362,70 +365,9 @@
 
 
 
---GO
---CREATE PROC AddUser 
---    @Login NVARCHAR(100), 
---    @Password NVARCHAR(255), 
---    @RoleId INT, 
---    @Salt NVARCHAR(255)
---AS 
---BEGIN
---    SET NOCOUNT ON;
-
---    BEGIN TRY
---        -- Check if the Login already exists
---        IF EXISTS (SELECT 1 FROM Users WHERE Login = @Login)
---        BEGIN
---            RAISERROR('A user with this login already exists.', 16, 1);
---            RETURN;
---        END
-
---        -- Check if the RoleId exists
---        IF NOT EXISTS (SELECT 1 FROM Roles WHERE Id = @RoleId)
---        BEGIN
---            RAISERROR('The specified role does not exist.', 16, 1);
---            RETURN;
---        END
-        
---        -- Insert the new user
---        INSERT INTO Users (Login, Password, RoleId, Salt)
---        VALUES (@Login, @Password, @RoleId, @Salt);
-
---        -- Get the ID of the newly inserted user
---        DECLARE @NewUserId INT = SCOPE_IDENTITY();
-
---        -- Return the inserted user joined with the role
---        SELECT 
---            u.Id, u.Login, u.Password, u.Salt, 
---            u.RoleId, u.CreatedAt, u.UpdatedAt,
---            r.Id AS RoleId, r.Name AS RoleName
---        FROM 
---            Users u
---        JOIN 
---            Roles r ON u.RoleId = r.Id
---        WHERE 
---            u.Id = @NewUserId;
-
---    END TRY
---	BEGIN CATCH
---        -- Handle errors, like unique constraint violations
---        DECLARE @ErrorMessage NVARCHAR(4000);
---        DECLARE @ErrorSeverity INT;
---        DECLARE @ErrorState INT;
-
---        SELECT 
---            @ErrorMessage = ERROR_MESSAGE(),
---            @ErrorSeverity = ERROR_SEVERITY(),
---            @ErrorState = ERROR_STATE();
-
---        RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
---    END CATCH
---END
-
-
 
 --GO
---CREATE PROCEDURE GetAllUsers
+--CREATE PROCEDURE GetUsers
 --AS
 --BEGIN
 --    SELECT 
@@ -463,12 +405,14 @@
 --        Roles.Name
 --    FROM 
 --        Users
---    LEFT JOIN 
+--    JOIN 
 --        Roles ON Users.RoleId = Roles.Id
 --		WHERE Users.Id = @Id
 --    ORDER BY 
 --        Users.Id;
 --END
+
+
 
 
 
@@ -525,52 +469,52 @@
 --END
 
 
-GO
-CREATE PROCEDURE UpdateRole
-    @Id INT,
-    @Name NVARCHAR(100)
-AS
-BEGIN
-    SET NOCOUNT ON;
+--GO
+--CREATE PROCEDURE UpdateRole
+--    @Id INT,
+--    @Name NVARCHAR(100)
+--AS
+--BEGIN
+--    SET NOCOUNT ON;
 
-    -- Check if the new role name already exists
-    IF EXISTS (SELECT 1 FROM Roles WHERE Name = @Name AND Id != @Id)
-    BEGIN
-        RAISERROR ('A role with this name already exists.', 16, 1);
-        RETURN;
-    END
+--    -- Check if the new role name already exists
+--    IF EXISTS (SELECT 1 FROM Roles WHERE Name = @Name AND Id != @Id)
+--    BEGIN
+--        RAISERROR ('A role with this name already exists.', 16, 1);
+--        RETURN;
+--    END
 
-    -- Ensure the role with the given Id exists
-    IF NOT EXISTS (SELECT 1 FROM Roles WHERE Id = @Id)
-    BEGIN
-        RAISERROR ('Role with the given Id does not exist.', 16, 1);
-        RETURN;
-    END
+--    -- Ensure the role with the given Id exists
+--    IF NOT EXISTS (SELECT 1 FROM Roles WHERE Id = @Id)
+--    BEGIN
+--        RAISERROR ('Role with the given Id does not exist.', 16, 1);
+--        RETURN;
+--    END
 
-    -- Try to update the role name
-    BEGIN TRY
-        UPDATE Roles
-        SET Name = @Name
-        WHERE Id = @Id;
+--    -- Try to update the role name
+--    BEGIN TRY
+--        UPDATE Roles
+--        SET Name = @Name
+--        WHERE Id = @Id;
 
-        -- Check if the update was successful
-        IF @@ROWCOUNT = 0
-        BEGIN
-            RAISERROR ('An error occurred while updating the role.', 16, 1);
-        END
-        ELSE
-        BEGIN
-            -- Return the updated role data
-            SELECT Id, Name
-            FROM Roles
-            WHERE Id = @Id;
-        END
-    END TRY
-    BEGIN CATCH
-        -- Handle other potential errors
-        THROW;
-    END CATCH
-END
+--        -- Check if the update was successful
+--        IF @@ROWCOUNT = 0
+--        BEGIN
+--            RAISERROR ('An error occurred while updating the role.', 16, 1);
+--        END
+--        ELSE
+--        BEGIN
+--            -- Return the updated role data
+--            SELECT Id, Name
+--            FROM Roles
+--            WHERE Id = @Id;
+--        END
+--    END TRY
+--    BEGIN CATCH
+--        -- Handle other potential errors
+--        THROW;
+--    END CATCH
+--END
 
 
 --GO
@@ -598,19 +542,6 @@ END
 --        RAISERROR ('Role not found or could not be deleted.', 16, 1);
 --    END
 --END
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -649,4 +580,75 @@ END
 --insert into Roles (Name) VALUES (N'User')
 --insert into Roles (Name) VALUES (N'Guest')
 
+
+
+--GO
+--CREATE PROCEDURE AddUser
+--    @Login NVARCHAR(100),
+--    @Password NVARCHAR(255),
+--    @RoleId INT,
+--    @Salt NVARCHAR(255)
+--AS
+--BEGIN
+--    SET NOCOUNT ON;
+
+--	-- Check if the login already exists
+--	IF EXISTS (SELECT 1 FROM Users WHERE Login = @Login)
+--    BEGIN
+--        RAISERROR('A user with this login already exists.', 16, 1);
+--        RETURN;
+--    END
+
+--    -- Check if the role with the given RoleId exists
+--    IF NOT EXISTS (SELECT 1 FROM Roles WHERE Id = @RoleId)
+--    BEGIN
+--        RAISERROR('Role with the given Id does not exist.', 16, 1);
+--        RETURN;
+--    END
+
+--    -- Insert the new user
+--    INSERT INTO Users (Login, Password, RoleId, Salt)
+--    VALUES (@Login, @Password, @RoleId, @Salt);
+
+--    -- Retrieve the newly inserted user with their role details
+--    SELECT 
+--        u.Id,
+--        u.Login,
+--        u.Password,
+--        u.Salt,
+--        u.RoleId,
+--        u.CreatedAt,
+--        u.UpdatedAt,
+--        r.Id,
+--        r.Name 
+--    FROM 
+--        Users u
+--    JOIN 
+--        Roles r ON u.RoleId = r.Id
+--    WHERE 
+--        u.Id = SCOPE_IDENTITY();
+--END
+
+--GO
+--CREATE PROCEDURE GetUserByLogin @Login NVARCHAR(100)
+--AS
+--BEGIN
+--    SELECT 
+--        Users.Id,
+--        Users.Login,
+--        Users.Password,
+--        Users.Salt,
+--        Users.RoleId,
+--        Users.CreatedAt,
+--        Users.UpdatedAt,
+--        Roles.Id,
+--        Roles.Name
+--    FROM 
+--        Users
+--    JOIN 
+--        Roles ON Users.RoleId = Roles.Id
+--		WHERE Users.Login = @Login COLLATE Latin1_General_CS_AS
+--    ORDER BY 
+--        Users.Id;
+--END
 

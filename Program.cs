@@ -22,6 +22,7 @@ var connectionString = builder.Configuration.GetConnectionString("Default");
 builder.Services.AddScoped<IPositionRepository, PositionRepositoryDapper>(provider => new PositionRepositoryDapper(connectionString));
 builder.Services.AddScoped<IPersonRepository, PersonRepositoryDapper>(provider => new PersonRepositoryDapper(connectionString));
 builder.Services.AddScoped<IRoleRepository, RoleRepositoryDapper>(provider => new RoleRepositoryDapper(connectionString));
+builder.Services.AddScoped<IUserRepository, UserRepositoryDapper>(provider => new UserRepositoryDapper(connectionString));
 
 
 var app = builder.Build();

@@ -133,12 +133,9 @@ namespace StaffWebApi.Controllers
 
 			catch (SqlException ex)
 			{
-				//Reference key constraint exception 
-				if (ex.Number == 547)
-					return BadRequest(new { message = "Cannot delete this role because it is referenced by one or more user." });
-
-				else
-					return StatusCode(500, "Internal server error");
+				
+				return BadRequest($"Cannot delete this role: {ex.Message}\n{ex.ErrorCode}");
+				
 			}
 
 			catch (Exception ex)
