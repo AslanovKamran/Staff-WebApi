@@ -11,5 +11,4 @@ public class Role
 	[MaxLength(100, ErrorMessage = "The Title field cannot be empty and exceed 100 characters.")]
 	public string Name { get; set; } = string.Empty;
 
-    
 }
