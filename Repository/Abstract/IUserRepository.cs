@@ -9,4 +9,10 @@ public interface IUserRepository
 
 	Task<User> SignUpUserAsync(User user);
 	Task<User> LogInUserAsync(string login);
+
+	Task AddRefreshTokenAsync(RefreshToken refreshToken);
+	Task<RefreshToken> GetRefreshTokenAsync(string token);
+
+	Task DeleteRefreshTokenAsync(string token);
+	Task DeleteUserRefreshTokensAsync(int id);
 }

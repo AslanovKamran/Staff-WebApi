@@ -1,11 +1,9 @@
-﻿using Dapper;
-using System.Data.SqlClient;
-using System.Data;
+﻿using StaffWebApi.Repository.Abstract;
 using StaffWebApi.Models.Domain;
-using StaffWebApi.Repository.Abstract;
-using Microsoft.AspNetCore.Identity;
+using System.Data.SqlClient;
 using StaffWebApi.Helpers;
-using System.Collections.Generic;
+using System.Data;
+using Dapper;
 
 namespace StaffWebApi.Repository.Dapper;
 
@@ -128,7 +126,7 @@ public class UserRepositoryDapper : IUserRepository
 
 			string query = @"exec GetUserByLogin @Login";
 			var loggedInUser = (await db.QueryAsync<User, Role, User>(
-				query, 
+				query,
 				(user, role) =>
 				{
 					user.Role = role;
@@ -139,4 +137,65 @@ public class UserRepositoryDapper : IUserRepository
 
 		}
 	}
+
+	public async Task AddRefreshTokenAsync(RefreshToken refreshToken)
+	{
+		using (IDbConnection db = new SqlConnection(_connectionString))
+		{
+			var parameters = new DynamicParameters();
+			parameters.Add("@Token", refreshToken.Token);
+			parameters.Add("@Expires", refreshToken.Expires);
+			parameters.Add("@UserId", refreshToken.UserId);
+
+			string query = "exec AddRefreshToken @Token, @Expires, @UserId";
+			await db.ExecuteAsync(query, parameters);
+		}
+	}
+
+	public async Task<RefreshToken> GetRefreshTokenAsync(string token)
+	{
+		using (IDbConnection db = new SqlConnection(_connectionString))
+		{
+			var parameters = new DynamicParameters();
+			parameters.Add("Token", token, DbType.String, ParameterDirection.Input);
+
+			string query = @"exec GetUserByRefreshToken @Token";
+			var result = await db.QueryAsync<RefreshToken, User, Role, RefreshToken>(
+			query,
+			(refreshToken, user, role) =>
+			{
+				refreshToken.User = user;
+				user.Role = role;
+				return refreshToken;
+			},
+			parameters
+		);
+			return result.FirstOrDefault()!;
+		}
+	}
+
+	public async Task DeleteRefreshTokenAsync(string token)
+	{
+		using (IDbConnection db = new SqlConnection(_connectionString))
+		{
+			var parameters = new DynamicParameters();
+			parameters.Add("@Token", token, DbType.String, ParameterDirection.Input);
+
+			string query = @"exec DeleteRefreshToken @Token";
+			await db.ExecuteAsync(query, parameters);
+		}
+	}
+
+	public async Task DeleteUserRefreshTokensAsync(int userId)
+	{
+		using (IDbConnection db = new SqlConnection(_connectionString))
+		{
+			var parameters = new DynamicParameters();
+			parameters.Add("UserId", userId, DbType.Int32, ParameterDirection.Input);
+
+			string query = @"exec DeleteUserRefreshTokens @UserId";
+			await db.ExecuteAsync(query, parameters);
+		}
+	}
+
 }

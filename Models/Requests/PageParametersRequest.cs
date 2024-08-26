@@ -1,5 +1,4 @@
-﻿
-namespace StaffWebApi.Models.Requests;
+﻿namespace StaffWebApi.Models.Requests;
 
 public class PageParametersRequest
 {

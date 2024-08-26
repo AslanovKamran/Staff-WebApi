@@ -1,8 +1,8 @@
-﻿using Dapper;
+﻿using StaffWebApi.Repository.Abstract;
 using System.Data.SqlClient;
-using System.Data;
 using StaffWebApi.Models.Domain;
-using StaffWebApi.Repository.Abstract;
+using System.Data;
+using Dapper;
 
 namespace StaffWebApi.Repository.Dapper
 {
