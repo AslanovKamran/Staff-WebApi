@@ -64,7 +64,7 @@ namespace StaffWebApi.Repository.Dapper
 			{
 				var parameters = new DynamicParameters();
 				parameters.Add("Id", role.Id, DbType.Int32, ParameterDirection.Input);
-				parameters.Add("Name", role.Name, DbType.String, ParameterDirection.Input);
+				parameters.Add("Name", CapitalizeFirstLetter(role.Name), DbType.String, ParameterDirection.Input);
 
 				string query = @"exec UpdateRole @Id, @Name";
 				var updatedRole= await db.QuerySingleOrDefaultAsync<Role>(query, parameters);
@@ -84,5 +84,8 @@ namespace StaffWebApi.Repository.Dapper
 				await db.ExecuteAsync(query, parameters);
 			}
 		}
+
+		private static string CapitalizeFirstLetter(string input) => char.ToUpper(input[0]) + input[1..].ToLower();
+
 	}
 }

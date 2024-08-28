@@ -65,7 +65,7 @@ public class PositionRepositoryDapper : IPositionRepository
 		{
 			var parameters = new DynamicParameters();
 			parameters.Add("Id", position.Id, DbType.Int32, ParameterDirection.Input);
-			parameters.Add("Title", position.Title, DbType.String, ParameterDirection.Input);
+			parameters.Add("Title", CapitalizeFirstLetter(position.Title), DbType.String, ParameterDirection.Input);
 			parameters.Add("Salary", position.Salary, DbType.Decimal, ParameterDirection.Input);
 
 			string query = @"exec UpdatePosition @Id, @Title, @Salary";
@@ -85,5 +85,8 @@ public class PositionRepositoryDapper : IPositionRepository
 			await db.ExecuteAsync(query, parameters);
 		}
 	}
+
+	private static string CapitalizeFirstLetter(string input) => char.ToUpper(input[0]) + input[1..].ToLower();
+	
 
 }

@@ -1,4 +1,5 @@
-﻿using StaffWebApi.Repository.Abstract;
+﻿using Microsoft.AspNetCore.Authorization;
+using StaffWebApi.Repository.Abstract;
 using StaffWebApi.Models.Requests;
 using StaffWebApi.Models.Domain;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +28,10 @@ public class PeopleController : ControllerBase
 	[HttpGet]
 	[ProducesResponseType(200)]
 	[ProducesResponseType(400)]
+	[ProducesResponseType(401)]
+	[ProducesResponseType(404)]
+	[ProducesResponseType(500)]
+	[Authorize(Roles = "Admin, User, Guest")]
 	public async Task<IActionResult> GetPeople([FromQuery] PageParametersRequest pageParameters)
 	{		
 		const int MaxItemsPerPage = 50;
@@ -70,7 +75,10 @@ public class PeopleController : ControllerBase
 	
 	[HttpGet("{id}")]
 	[ProducesResponseType(200)]
-	[ProducesResponseType(400)]
+	[ProducesResponseType(401)]
+	[ProducesResponseType(404)]
+	[ProducesResponseType(500)]
+	[Authorize(Roles = "Admin, User, Guest")]
 	public async Task<IActionResult> GetPersonById(int id)
 	{
 		try
@@ -94,10 +102,13 @@ public class PeopleController : ControllerBase
 	/// <returns></returns>
 	
 	[HttpPost]
-	[ProducesResponseType(200)]
+	[ProducesResponseType(201)]
 	[ProducesResponseType(400)]
+	[ProducesResponseType(401)]
+	[ProducesResponseType(403)]
 	[ProducesResponseType(409)]
 	[ProducesResponseType(500)]
+	[Authorize(Roles = "Admin")]
 	public async Task<IActionResult> AddPerson([FromForm] AddPersonDTO dto, IFormFile? image)
 	{
 		if (!ModelState.IsValid)
@@ -164,9 +175,13 @@ public class PeopleController : ControllerBase
 	
 	[HttpPut]
 	[ProducesResponseType(200)]
+	[ProducesResponseType(400)]
+	[ProducesResponseType(401)]
+	[ProducesResponseType(403)]
 	[ProducesResponseType(404)]
 	[ProducesResponseType(409)]
 	[ProducesResponseType(500)]
+	[Authorize(Roles = "Admin")]
 	public async Task<IActionResult> UpdatePerson([FromForm] UpdatePersonDTO dto, IFormFile? image)
 	{
 		if (!ModelState.IsValid)
@@ -206,7 +221,6 @@ public class PeopleController : ControllerBase
 			catch (Exception ex)
 			{
 				return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
-
 			}
 		}
 
@@ -236,9 +250,13 @@ public class PeopleController : ControllerBase
 	/// </summary>
 	/// <param name="id"></param>
 	/// <returns></returns>
+	
 	[HttpDelete("{id}")]
 	[ProducesResponseType(204)]
+	[ProducesResponseType(401)]
+	[ProducesResponseType(403)]
 	[ProducesResponseType(404)]
+	[Authorize(Roles = "Admin")]
 	public async Task<IActionResult> DeletePerson(int id)
 	{
 
@@ -253,8 +271,6 @@ public class PeopleController : ControllerBase
 			FileEraser.DeleteImage(currentPerson.ImageUrl);
 		}
 		return NoContent();
-
-
 	}
 
 }

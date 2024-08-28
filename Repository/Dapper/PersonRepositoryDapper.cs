@@ -69,8 +69,8 @@ public class PersonRepositoryDapper : IPersonRepository
 		using (IDbConnection db = new SqlConnection(_connectionString))
 		{
 			var parameters = new DynamicParameters();
-			parameters.Add("Name", person.Name, DbType.String, ParameterDirection.Input);
-			parameters.Add("Surname", person.Surname, DbType.String, ParameterDirection.Input);
+			parameters.Add("Name", CapitalizeFirstLetter(person.Name), DbType.String, ParameterDirection.Input);
+			parameters.Add("Surname", CapitalizeFirstLetter(person.Surname), DbType.String, ParameterDirection.Input);
 			parameters.Add("Phone", person.Phone, DbType.String, ParameterDirection.Input);
 			parameters.Add("Email", person.Email, DbType.String, ParameterDirection.Input);
 			parameters.Add("ImageUrl", person.ImageUrl, DbType.String, ParameterDirection.Input);
@@ -131,7 +131,7 @@ public class PersonRepositoryDapper : IPersonRepository
 		}
 	}
 
-	public async Task<int> GetTotalPeopleCountAsync() 
+	public async Task<int> GetTotalPeopleCountAsync()
 	{
 		using (IDbConnection db = new SqlConnection(_connectionString))
 		{
@@ -140,5 +140,7 @@ public class PersonRepositoryDapper : IPersonRepository
 			return totalCount;
 		}
 	}
+
+	private static string CapitalizeFirstLetter(string input) => char.ToUpper(input[0]) + input[1..].ToLower();
 
 }

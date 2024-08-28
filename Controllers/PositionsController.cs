@@ -1,4 +1,5 @@
-﻿using StaffWebApi.Repository.Abstract;
+﻿using Microsoft.AspNetCore.Authorization;
+using StaffWebApi.Repository.Abstract;
 using StaffWebApi.Models.Domain;
 using Microsoft.AspNetCore.Mvc;
 using System.Data.SqlClient;
@@ -22,14 +23,25 @@ public class PositionsController : ControllerBase
 
 	[HttpGet]
 	[ProducesResponseType(200)]
+	[ProducesResponseType(400)]
+	[ProducesResponseType(401)]
 	[ProducesResponseType(404)]
+	[ProducesResponseType(500)]
+	[Authorize(Roles = "Admin, User, Guest")]
 	public async Task<IActionResult> GetPositions()
 	{
-		var positions = await _repository.GetPositionsAsync();
-		if (positions == null || !positions.Any()) 
-			return NotFound("No positoins found");
-			
-		return Ok(positions);
+		try
+		{
+			var positions = await _repository.GetPositionsAsync();
+			if (positions == null || !positions.Any())
+				return NotFound("No positoins found");
+
+			return Ok(positions);
+		}
+		catch (Exception ex)
+		{
+			return StatusCode(500, $"An error occurred while processing your request: {ex.Message}");
+		}
 	}
 
 	/// <summary>
@@ -40,10 +52,22 @@ public class PositionsController : ControllerBase
 	/// 
 
 	[HttpGet("{id}")]
-	public async Task<IActionResult> GetPosition(int id) 
+	[ProducesResponseType(200)]
+	[ProducesResponseType(400)]
+	[ProducesResponseType(401)]
+	[ProducesResponseType(500)]
+	[Authorize(Roles = "Admin, User, Guest")]
+	public async Task<IActionResult> GetPositionById(int id)
 	{
-		var postion = await _repository.GetPositionByIdAsync(id);
-		return postion == null ? NotFound("Incorrect Position Id") : Ok(postion);
+		try
+		{
+			var postion = await _repository.GetPositionByIdAsync(id);
+			return postion == null ? NotFound("Incorrect Position Id") : Ok(postion);
+		}
+		catch (Exception ex)
+		{
+			return StatusCode(500, $"An error occurred while processing your request: {ex.Message}");
+		}
 	}
 
 
@@ -57,12 +81,15 @@ public class PositionsController : ControllerBase
 	[HttpPost]
 	[ProducesResponseType(201)]
 	[ProducesResponseType(400)]
+	[ProducesResponseType(401)]
+	[ProducesResponseType(403)]
 	[ProducesResponseType(409)]
 	[ProducesResponseType(500)]
-	public async Task<IActionResult> AddPosition([FromForm] Position position) 
+	[Authorize(Roles = "Admin")]
+	public async Task<IActionResult> AddPosition([FromForm] Position position)
 	{
-		if(position == null) return BadRequest("Position data required");
-		if(!ModelState.IsValid) return BadRequest(ModelState);
+		if (position == null) return BadRequest("Position data required");
+		if (!ModelState.IsValid) return BadRequest(ModelState);
 
 		try
 		{
@@ -83,8 +110,6 @@ public class PositionsController : ControllerBase
 		{
 			return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
 		}
-
-
 	}
 
 	/// <summary>
@@ -92,23 +117,23 @@ public class PositionsController : ControllerBase
 	/// </summary>
 	/// <param name="position"></param>
 	/// <returns></returns>
-	
+
 	[HttpPut]
-	[ProducesResponseType(201)]
+	[ProducesResponseType(200)]
 	[ProducesResponseType(400)]
+	[ProducesResponseType(401)]
+	[ProducesResponseType(403)]
 	[ProducesResponseType(404)]
+	[ProducesResponseType(500)]
+	[Authorize(Roles = "Admin")]
 	public async Task<IActionResult> UpdatePosition([FromForm] Position position)
 	{
 		if (position == null)
-		{
 			return BadRequest("Position data is required.");
-		}
 
-		
+
 		if (!ModelState.IsValid)
-		{
 			return BadRequest(ModelState);
-		}
 
 		var existingPosition = await _repository.GetPositionByIdAsync(position.Id);
 		if (existingPosition == null)
@@ -116,11 +141,19 @@ public class PositionsController : ControllerBase
 			return NotFound("Position not found.");
 		}
 
+		try
+		{
 		// Update the position and get the result
 		var updatedPosition = await _repository.UpdatePositionAsync(position);
 
 		// Return the updated position
 		return Ok(updatedPosition);
+
+		}
+		catch (Exception ex)
+		{
+			return StatusCode(500, $"An error occurred while processing your request: {ex.Message}");
+		}
 	}
 
 	/// <summary>
@@ -132,9 +165,15 @@ public class PositionsController : ControllerBase
 	[HttpDelete("{id}")]
 	[ProducesResponseType(204)]
 	[ProducesResponseType(400)]
-	public async Task<IActionResult> DeletePosition(int id) 
+	[ProducesResponseType(401)]
+	[ProducesResponseType(403)]
+	[ProducesResponseType(404)]
+	[ProducesResponseType(500)]
+	[Authorize(Roles = "Admin")]
+	public async Task<IActionResult> DeletePosition(int id)
 	{
-		if (await _repository.GetPositionByIdAsync(id) is null) return NotFound("No Position Found");
+		if (await _repository.GetPositionByIdAsync(id) is null) 
+			return NotFound("No Position Found");
 
 		try
 		{
@@ -147,12 +186,12 @@ public class PositionsController : ControllerBase
 			//Reference key constraint exception 
 			if (ex.Number == 547)
 				return BadRequest(new { message = "Cannot delete this position because it is referenced by one or more people." });
-			
+
 			else
 				return StatusCode(500, "Internal server error");
 		}
 
-		catch (Exception ex) 
+		catch (Exception ex)
 		{
 			return BadRequest($"Failed to delete position {ex.Message}");
 		}

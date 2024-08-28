@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using StaffWebApi.Repository.Abstract;
+using Microsoft.IdentityModel.Tokens;
 using StaffWebApi.Repository.Dapper;
+using Microsoft.OpenApi.Models;
 using StaffWebApi.Tokens;
 using System.Reflection;
 using System.Text;
@@ -52,8 +52,8 @@ const double REFRESH_TOKEN_LIFE_TIME_DAYS = 30;
 
 builder.Services.Configure<JwtOptions>(options =>
 {
-	options.Issuer = jwtOptions["Issuer"]!;
-	options.Audience = jwtOptions["Audience"]!;
+	options.Issuer = jwtOptions["Issuer"];
+	options.Audience = jwtOptions["Audience"];
 	options.AccessValidFor = TimeSpan.FromHours(ACCESS_TOKEN_LIFE_TIME_HRS);
 	options.RefreshValidFor = TimeSpan.FromDays(REFRESH_TOKEN_LIFE_TIME_DAYS);
 	options.SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);

@@ -1,11 +1,11 @@
 ﻿using StaffWebApi.Repository.Abstract;
+using StaffWebApi.Models.Requests;
 using StaffWebApi.Models.Domain;
 using Microsoft.AspNetCore.Mvc;
 using StaffWebApi.Models.DTO;
 using System.Data.SqlClient;
 using StaffWebApi.Helpers;
 using StaffWebApi.Tokens;
-using StaffWebApi.Models.Requests;
 
 namespace StaffWebApi.Controllers;
 

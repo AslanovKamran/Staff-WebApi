@@ -1,4 +1,5 @@
-﻿using StaffWebApi.Repository.Abstract;
+﻿using Microsoft.AspNetCore.Authorization;
+using StaffWebApi.Repository.Abstract;
 using StaffWebApi.Models.Domain;
 using Microsoft.AspNetCore.Mvc;
 using System.Data.SqlClient;
@@ -16,17 +17,30 @@ namespace StaffWebApi.Controllers
 		/// Get All Roles
 		/// </summary>
 		/// <returns></returns>
-		
+
 		[HttpGet]
-		[ProducesResponseType(404)]
 		[ProducesResponseType(200)]
+		[ProducesResponseType(400)]
+		[ProducesResponseType(401)]
+		[ProducesResponseType(403)]
+		[ProducesResponseType(404)]
+		[ProducesResponseType(500)]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> GetRolesAsync()
 		{
-			var roles = await _repository.GetRolesAsync();
-			if (roles == null || !roles.Any())
-				return NotFound("No roles found");
+			try
+			{
 
-			return Ok(roles);
+				var roles = await _repository.GetRolesAsync();
+				if (roles == null || !roles.Any())
+					return NotFound("No roles found");
+
+				return Ok(roles);
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, $"An error occurred while processing your request: {ex.Message}");
+			}
 		}
 
 		/// <summary>
@@ -37,11 +51,23 @@ namespace StaffWebApi.Controllers
 
 		[HttpGet("{id}")]
 		[ProducesResponseType(200)]
-		[ProducesResponseType(404)]
+		[ProducesResponseType(400)]
+		[ProducesResponseType(401)]
+		[ProducesResponseType(403)]
+		[ProducesResponseType(500)]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> GetRoleById(int id)
 		{
-			var role = await _repository.GetRoleByIdAsync(id);
-			return role == null ? NotFound("Incorrect Position Id") : Ok(role);
+			try
+			{
+				var role = await _repository.GetRoleByIdAsync(id);
+				return role == null ? NotFound("Incorrect Position Id") : Ok(role);
+
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, $"An error occurred while processing your request: {ex.Message}");
+			}
 		}
 
 		/// <summary>
@@ -49,12 +75,15 @@ namespace StaffWebApi.Controllers
 		/// </summary>
 		/// <param name="role"></param>
 		/// <returns></returns>
-		
+
 		[HttpPost]
 		[ProducesResponseType(201)]
 		[ProducesResponseType(400)]
+		[ProducesResponseType(401)]
+		[ProducesResponseType(403)]
 		[ProducesResponseType(409)]
 		[ProducesResponseType(500)]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> AddRole([FromForm] Role role)
 		{
 			if (role == null) return BadRequest("Role data required");
@@ -84,10 +113,15 @@ namespace StaffWebApi.Controllers
 		/// </summary>
 		/// <param name="role"></param>
 		/// <returns></returns>
-		
+
 		[HttpPut]
 		[ProducesResponseType(200)]
 		[ProducesResponseType(400)]
+		[ProducesResponseType(401)]
+		[ProducesResponseType(403)]
+		[ProducesResponseType(409)]
+		[ProducesResponseType(500)]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> UpdateRole([FromForm] Role role)
 		{
 			if (role == null) return BadRequest("Position data is required.");
@@ -101,29 +135,33 @@ namespace StaffWebApi.Controllers
 			}
 			catch (SqlException ex)
 			{
-				return BadRequest($"Database error occured while updating a role: {ex.Message}");
+				return Conflict($"Database error occured while updating a role: {ex.Message}");
 			}
 
-			catch (Exception ex) 
+			catch (Exception ex)
 			{
-				return BadRequest($"Unexpected occured while updating a role: {ex.Message}");
+				return StatusCode(500, $"Unexpected occured while updating a role: {ex.Message}");
 			}
 		}
-		
+
 		/// <summary>
 		/// Delete A Specific Role By Its Id (Do not delete a role referenced by other users)
 		/// </summary>
 		/// <param name="id"></param>
 		/// <returns></returns>
-		
+
 		[HttpDelete]
 		[ProducesResponseType(204)]
+		[ProducesResponseType(401)]
+		[ProducesResponseType(403)]
 		[ProducesResponseType(404)]
-		[ProducesResponseType(400)]
+		[ProducesResponseType(409)]
 		[ProducesResponseType(500)]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> DeletePosition(int id)
 		{
-			if (await _repository.GetRoleByIdAsync(id) is null) return NotFound("No Position Found");
+			if (await _repository.GetRoleByIdAsync(id) is null) 
+				return NotFound("No Position Found");
 
 			try
 			{
@@ -133,14 +171,14 @@ namespace StaffWebApi.Controllers
 
 			catch (SqlException ex)
 			{
-				
-				return BadRequest($"Cannot delete this role: {ex.Message}\n{ex.ErrorCode}");
-				
+
+				return Conflict($"Cannot delete this role: {ex.Message}\n{ex.ErrorCode}");
+
 			}
 
 			catch (Exception ex)
 			{
-				return BadRequest($"Failed to delete a role {ex.Message}");
+				return StatusCode(500, $"Unexpected occured while deleting a role: {ex.Message}");
 			}
 		}
 	}
