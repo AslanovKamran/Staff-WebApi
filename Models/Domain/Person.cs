@@ -7,7 +7,7 @@ public class Person
 	[Key]
 	public int Id { get; set; }
 
-	[Required(AllowEmptyStrings =false)]
+	[Required(AllowEmptyStrings = false)]
 	[MaxLength(100)]
 	public string Name { get; set; } = string.Empty;
 
@@ -20,7 +20,7 @@ public class Person
 	[Phone]
 	public string Phone { get; set; } = string.Empty;
 
-	[Required(AllowEmptyStrings =false)]
+	[Required(AllowEmptyStrings = false)]
 	[MaxLength(255)]
 	public string Email { get; set; } = string.Empty;
 
@@ -31,4 +31,4 @@ public class Person
 
 	public Position Position { get; set; } = new();
 
-    }
+}

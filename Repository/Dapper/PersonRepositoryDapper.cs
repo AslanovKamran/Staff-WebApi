@@ -1,17 +1,17 @@
 ﻿using StaffWebApi.Repository.Abstract;
 using StaffWebApi.Models.Domain;
 using System.Data.SqlClient;
+using StaffWebApi.Helpers;
 using System.Data;
 using Dapper;
-
 
 namespace StaffWebApi.Repository.Dapper;
 
 public class PersonRepositoryDapper : IPersonRepository
 {
 	private readonly string _connectionString;
-	public PersonRepositoryDapper(string connectionString) => _connectionString = connectionString;
 
+	public PersonRepositoryDapper(string connectionString) => _connectionString = connectionString;
 
 	public async Task<List<Person>> GetPeopleAsync(int itemsPerPage, int currentPage)
 	{
@@ -69,8 +69,8 @@ public class PersonRepositoryDapper : IPersonRepository
 		using (IDbConnection db = new SqlConnection(_connectionString))
 		{
 			var parameters = new DynamicParameters();
-			parameters.Add("Name", CapitalizeFirstLetter(person.Name), DbType.String, ParameterDirection.Input);
-			parameters.Add("Surname", CapitalizeFirstLetter(person.Surname), DbType.String, ParameterDirection.Input);
+			parameters.Add("Name", TextFormatter.ToTitleCase(person.Name), DbType.String, ParameterDirection.Input);
+			parameters.Add("Surname", TextFormatter.ToTitleCase(person.Surname), DbType.String, ParameterDirection.Input);
 			parameters.Add("Phone", person.Phone, DbType.String, ParameterDirection.Input);
 			parameters.Add("Email", person.Email, DbType.String, ParameterDirection.Input);
 			parameters.Add("ImageUrl", person.ImageUrl, DbType.String, ParameterDirection.Input);
@@ -94,18 +94,14 @@ public class PersonRepositoryDapper : IPersonRepository
 		{
 			var parameters = new DynamicParameters();
 			parameters.Add("Id", person.Id, DbType.Int32, ParameterDirection.Input);
-			parameters.Add("Name", person.Name, DbType.String, ParameterDirection.Input);
-			parameters.Add("Surname", person.Surname, DbType.String, ParameterDirection.Input);
+			parameters.Add("Name", TextFormatter.ToTitleCase (person.Name), DbType.String, ParameterDirection.Input);
+			parameters.Add("Surname", TextFormatter.ToTitleCase(person.Surname), DbType.String, ParameterDirection.Input);
 			parameters.Add("Phone", person.Phone, DbType.String, ParameterDirection.Input);
 			parameters.Add("Email", person.Email, DbType.String, ParameterDirection.Input);
 			parameters.Add("ImageUrl", person.ImageUrl, DbType.String, ParameterDirection.Input);
 			parameters.Add("PositionId", person.PositionId, DbType.Int32, ParameterDirection.Input);
 
 			string query = "exec UpdatePerson @Id, @Name, @Surname, @Phone, @Email, @ImageUrl, @PositionId";
-
-
-
-
 
 			var updatedPerson = (await db.QueryAsync<Person, Position, Person>(query, (person, position) =>
 			{
@@ -140,7 +136,4 @@ public class PersonRepositoryDapper : IPersonRepository
 			return totalCount;
 		}
 	}
-
-	private static string CapitalizeFirstLetter(string input) => char.ToUpper(input[0]) + input[1..].ToLower();
-
 }

@@ -1,6 +1,7 @@
 ﻿using StaffWebApi.Repository.Abstract;
-using System.Data.SqlClient;
 using StaffWebApi.Models.Domain;
+using System.Data.SqlClient;
+using StaffWebApi.Helpers;
 using System.Data;
 using Dapper;
 
@@ -8,7 +9,6 @@ namespace StaffWebApi.Repository.Dapper
 {
 	public class RoleRepositoryDapper : IRoleRepository
 	{
-
 		private readonly string _connectionString;
 
 		public RoleRepositoryDapper(string connectionString) => _connectionString = connectionString;
@@ -35,7 +35,6 @@ namespace StaffWebApi.Repository.Dapper
 			}
 		}
 
-
 		public async Task<Role> AddRoleAsync(Role role)
 		{
 			using (IDbConnection db = new SqlConnection(_connectionString))
@@ -57,21 +56,19 @@ namespace StaffWebApi.Repository.Dapper
 			}
 		}
 
-
 		public async Task<Role> UpdateRoleAsync(Role role)
 		{
 			using (IDbConnection db = new SqlConnection(_connectionString))
 			{
 				var parameters = new DynamicParameters();
 				parameters.Add("Id", role.Id, DbType.Int32, ParameterDirection.Input);
-				parameters.Add("Name", CapitalizeFirstLetter(role.Name), DbType.String, ParameterDirection.Input);
+				parameters.Add("Name", TextFormatter.ToTitleCase(role.Name), DbType.String, ParameterDirection.Input);
 
 				string query = @"exec UpdateRole @Id, @Name";
 				var updatedRole= await db.QuerySingleOrDefaultAsync<Role>(query, parameters);
 				return updatedRole!;
 			}
 		}
-
 
 		public async Task DeleteRoleByIdAsync(int id)
 		{
@@ -83,9 +80,6 @@ namespace StaffWebApi.Repository.Dapper
 				string query = @"DeleteRoleById @Id";
 				await db.ExecuteAsync(query, parameters);
 			}
-		}
-
-		private static string CapitalizeFirstLetter(string input) => char.ToUpper(input[0]) + input[1..].ToLower();
-
+		}		
 	}
 }

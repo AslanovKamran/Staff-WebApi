@@ -15,4 +15,6 @@ public interface IUserRepository
 
 	Task DeleteRefreshTokenAsync(string token);
 	Task DeleteUserRefreshTokensAsync(int id);
+
+	Task ChangeUserPasswordAsync(string login, string oldPassword, string newPassword);
 }

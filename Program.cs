@@ -47,8 +47,8 @@ builder.Services.AddSwaggerGen((options =>
 var jwtOptions = builder.Configuration.GetSection("JwtOptions");
 var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions["Key"]!));
 
-const double ACCESS_TOKEN_LIFE_TIME_HRS = 24;
-const double REFRESH_TOKEN_LIFE_TIME_DAYS = 30;
+const int ACCESS_TOKEN_LIFE_TIME_HRS = 24;
+const int REFRESH_TOKEN_LIFE_TIME_DAYS = 31;
 
 builder.Services.Configure<JwtOptions>(options =>
 {

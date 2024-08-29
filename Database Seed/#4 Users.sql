@@ -149,4 +149,37 @@ BEGIN
 END
 
 
+GO
+CREATE PROC ChangeUserPassword
+    @Login NVARCHAR(100), 
+    @OldPassword NVARCHAR(255),
+    @NewPassword NVARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Check if the user exists with the provided login and old password
+    IF EXISTS (
+        SELECT 1 
+        FROM [Users] 
+        WHERE [Login] = @Login COLLATE Latin1_General_CS_AS 
+        AND [Password] = @OldPassword COLLATE Latin1_General_CS_AS
+    )
+    BEGIN
+        -- If user exists, update the password
+        UPDATE [Users] 
+        SET [Password] = @NewPassword, 
+            [UpdatedAt] = SYSDATETIME() 
+        WHERE [Login] = @Login COLLATE Latin1_General_CS_AS;
+    END
+    ELSE
+    BEGIN
+        -- If user does not exist, raise an error
+        RAISERROR('Invalid login or old password.', 16, 1);
+    END
+END;
+
+
+
+
 

@@ -1,17 +1,17 @@
 ﻿using StaffWebApi.Repository.Abstract;
 using StaffWebApi.Models.Domain;
 using System.Data.SqlClient;
+using StaffWebApi.Helpers;
 using System.Data;
 using Dapper;
-
 
 namespace StaffWebApi.Repository.Dapper;
 
 public class PositionRepositoryDapper : IPositionRepository
 {
 	private readonly string _connectionString = string.Empty;
-	public PositionRepositoryDapper(string connectionString) => _connectionString = connectionString;
 
+	public PositionRepositoryDapper(string connectionString) => _connectionString = connectionString;
 
 	public async Task<List<Position>> GetPositionsAsync()
 	{
@@ -21,6 +21,7 @@ public class PositionRepositoryDapper : IPositionRepository
 			return (await db.QueryAsync<Position>(query)).ToList();
 		}
 	}
+	
 	public async Task<Position> GetPositionByIdAsync(int id)
 	{
 		using (IDbConnection db = new SqlConnection(_connectionString))
@@ -65,7 +66,7 @@ public class PositionRepositoryDapper : IPositionRepository
 		{
 			var parameters = new DynamicParameters();
 			parameters.Add("Id", position.Id, DbType.Int32, ParameterDirection.Input);
-			parameters.Add("Title", CapitalizeFirstLetter(position.Title), DbType.String, ParameterDirection.Input);
+			parameters.Add("Title", TextFormatter.ToTitleCase(position.Title), DbType.String, ParameterDirection.Input);
 			parameters.Add("Salary", position.Salary, DbType.Decimal, ParameterDirection.Input);
 
 			string query = @"exec UpdatePosition @Id, @Title, @Salary";
@@ -85,8 +86,4 @@ public class PositionRepositoryDapper : IPositionRepository
 			await db.ExecuteAsync(query, parameters);
 		}
 	}
-
-	private static string CapitalizeFirstLetter(string input) => char.ToUpper(input[0]) + input[1..].ToLower();
-	
-
 }

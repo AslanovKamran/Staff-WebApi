@@ -1,4 +1,5 @@
-﻿using StaffWebApi.Repository.Abstract;
+﻿using Microsoft.AspNetCore.Authorization;
+using StaffWebApi.Repository.Abstract;
 using StaffWebApi.Models.Requests;
 using StaffWebApi.Models.Domain;
 using Microsoft.AspNetCore.Mvc;
@@ -78,7 +79,7 @@ public class UsersController : ControllerBase
 	/// </summary>
 	/// <param name="signUpUserDTO"></param>
 	/// <returns></returns>
-	
+
 	[HttpPost]
 	[Route("sign-up")]
 	[ProducesResponseType(201)]
@@ -130,7 +131,7 @@ public class UsersController : ControllerBase
 	/// </summary>
 	/// <param name="logInUserDTO"></param>
 	/// <returns></returns>
-	
+
 	[HttpPost]
 	[Route("log-in")]
 	[ProducesResponseType(200)]
@@ -173,7 +174,7 @@ public class UsersController : ControllerBase
 	/// </summary>
 	/// <param name="userId"></param>
 	/// <returns></returns>
-	
+
 	[HttpPost]
 	[Route("log-out")]
 	[ProducesResponseType(200)]
@@ -188,13 +189,15 @@ public class UsersController : ControllerBase
 		}
 		catch (Exception ex)
 		{
-
 			return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
 		}
 	}
 
 	[HttpPost]
 	[Route("refresh")]
+	[ProducesResponseType(200)]
+	[ProducesResponseType(400)]
+	[ProducesResponseType(401)]
 	public async Task<ActionResult> Refresh(RefreshRequest request)
 	{
 		// Validate the refresh token
@@ -203,7 +206,7 @@ public class UsersController : ControllerBase
 
 		//Get OldToken (with mapped user) by refreshToken
 		var oldToken = await _repository.GetRefreshTokenAsync(request.RefreshToken);
-		if (oldToken == null) 
+		if (oldToken == null)
 			return Unauthorized("Invalid Refresh Token");
 
 		else if (oldToken.Expires < DateTimeOffset.UtcNow)
@@ -216,7 +219,7 @@ public class UsersController : ControllerBase
 		var user = oldToken.User;
 		if (user == null)
 			return Unauthorized("User not found");
-		
+
 		//RemoveOldToken
 		await _repository.DeleteRefreshTokenAsync(oldToken.Token);
 
@@ -233,6 +236,39 @@ public class UsersController : ControllerBase
 		var newAccessToken = _tokenGenerator.GenerateAccessToken(user);
 		var tokens = new { AccessToken = newAccessToken, RefreshToken = newRefreshToken.Token };
 		return Ok(tokens);
+	}
+
+	[HttpPost]
+	[Route("changePassword")]
+	[ProducesResponseType(400)]
+	[ProducesResponseType(401)]
+	[ProducesResponseType(403)]
+	[ProducesResponseType(409)]
+	[ProducesResponseType(500)]
+	[Authorize(Roles ="Admin, User, Guest")]
+	public async Task<IActionResult> ChangePassword([FromForm] ChangePasswordRequest request)
+	{
+		if (!ModelState.IsValid)
+			return BadRequest(ModelState);
+
+		try
+		{
+			await _repository.ChangeUserPasswordAsync(request.Login, request.OldPassword, request.NewPassword);
+			return Ok(new
+			{
+				Success = true,
+				Message = $"Password of the user {request.Login} has been changed successfully"
+			});
+
+		}
+		catch (SqlException ex)
+		{
+			return Conflict($"SQL Exception occured. Operation terminated with the code: {ex.ErrorCode}\nError Message: {ex.Message}");
+		}
+		catch (Exception ex)
+		{
+			return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+		}
 	}
 
 }
