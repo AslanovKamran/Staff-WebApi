@@ -178,8 +178,3 @@ BEGIN
         RAISERROR('Invalid login or old password.', 16, 1);
     END
 END;
-
-
-
-
-

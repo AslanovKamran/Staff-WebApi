@@ -136,5 +136,3 @@ GO
 INSERT INTO Roles (Name) VALUES (N'Admin')
 INSERT INTO Roles (Name) VALUES (N'User')
 INSERT INTO Roles (Name) VALUES (N'Guest')
-
-

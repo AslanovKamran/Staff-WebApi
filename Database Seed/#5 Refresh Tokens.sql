@@ -48,5 +48,3 @@ AS
 BEGIN
     DELETE FROM RefreshTokens WHERE UserId = @UserId
 END
-
-
